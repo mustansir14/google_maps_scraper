@@ -38,7 +38,7 @@ class EmailScraper:
     def get_contact_url_at_top(self, urls: List[str]) -> List[str]:
         for index, url in enumerate(urls):
             if "contact" in url:
-                return [url] + urls[:index] + urls[index+1:]
+                return [url] + urls[:index] + urls[index + 1 :]
         return urls
 
     def scrape_url(self, url: str) -> List[str]:

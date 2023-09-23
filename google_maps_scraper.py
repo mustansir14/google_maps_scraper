@@ -95,9 +95,10 @@ class GoogleMapsScraper:
         email = None
         first_name = None
         last_name = None
-        if results.get('website'):
+        if results.get("website"):
             logging.info(
-                f"Scraping email for place id {place.place_id} website {results.get('website')}")
+                f"Scraping email for place id {place.place_id} website {results.get('website')}"
+            )
             emails = self.email_scraper.scrape_url(results.get("website"))
             if emails:
                 email = emails[0]
@@ -118,15 +119,14 @@ class GoogleMapsScraper:
             place_id=place.place_id,
             email=email,
             first_name=first_name,
-            last_name=last_name
+            last_name=last_name,
         )
 
     def get_full_places(self, query: str) -> List[PlaceFullInfo]:
         next_page_token = None
         full_places = []
         while True:
-            places, next_page_token = self.get_places_raw(
-                query, next_page_token)
+            places, next_page_token = self.get_places_raw(query, next_page_token)
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 future_to_place = {
                     executor.submit(self.get_place_details, place): place
