@@ -43,6 +43,12 @@ class PlaceFullInfo:
     last_name: str
 
 
+@dataclass
+class Response:
+    results: List[PlaceFullInfo]
+    next_page_token: str | None
+
+
 class GoogleMapsScraper:
     def __init__(self, api_key: str) -> None:
         self.api_key = api_key
@@ -122,20 +128,17 @@ class GoogleMapsScraper:
             last_name=last_name,
         )
 
-    def get_full_places(self, query: str) -> List[PlaceFullInfo]:
-        next_page_token = None
+    def get_full_places(self, query: str, next_page_token: str | None = None) -> Response:
         full_places = []
-        while True:
-            places, next_page_token = self.get_places_raw(query, next_page_token)
-            with concurrent.futures.ThreadPoolExecutor() as executor:
-                future_to_place = {
-                    executor.submit(self.get_place_details, place): place
-                    for place in places
-                }
-                for future in concurrent.futures.as_completed(future_to_place):
-                    full_places.append(future.result())
-            if next_page_token is None:
-                return full_places
+        places, next_page_token = self.get_places_raw(query, next_page_token)
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future_to_place = {
+                executor.submit(self.get_place_details, place): place
+                for place in places
+            }
+            for future in concurrent.futures.as_completed(future_to_place):
+                full_places.append(future.result())
+        return Response(full_places, next_page_token)
 
 
 if __name__ == "__main__":
